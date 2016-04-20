@@ -100,6 +100,28 @@ a1Value b1Value`
 	}
 }
 
+func TestLessFieldsThanValues(t *testing.T){
+	input := `#Fields: a b
+a1Value b1Value cValue`
+	expectedOutput := encode(map[string]string{"a":"a1Value","b":"b1Value"})
+	info := NewInfo()
+	_ = info.Read(input)
+	if(len(info.Values()) != 1 || info.Values()[0] != expectedOutput){
+		t.Error(info.Values())
+	}
+}
+
+func TestLessValuesThanFields(t *testing.T){
+	input := `#Fields: a b
+a1Value`
+	expectedOutput := encode(map[string]string{"a":"a1Value"})
+	info := NewInfo()
+	_ = info.Read(input)
+	if(len(info.Values()) != 1 || info.Values()[0] != expectedOutput){
+		t.Error(info.Values())
+	}
+}
+
 func encode(m map[string]string)	string{
 		b := new(bytes.Buffer)
 		e := json.NewEncoder(b)
