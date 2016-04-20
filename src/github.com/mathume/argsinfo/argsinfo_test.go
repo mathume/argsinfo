@@ -4,7 +4,16 @@ import (
 	"testing"
 	"encoding/json"
 	"bytes"
+	"strings"
 )
+
+func TestTestingEncodingFunction(t *testing.T){
+	encoded := encode(map[string]string{"a":"b"})
+	expected := "{\"a\":\"b\"}"
+	if encoded != expected{
+		t.Error("actual:", encoded, "expected:", expected)
+	}
+}
 
 func TestFieldsDefinedIsFalseIfNotRead(t *testing.T){
 	info := NewInfo()
@@ -129,5 +138,5 @@ func encode(m map[string]string)	string{
 		if(err != nil){
 			return "couldn't encode in test"
 		}
-		return b.String()
+		return strings.Trim(b.String(), "\n")
 }

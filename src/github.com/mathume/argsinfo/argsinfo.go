@@ -112,7 +112,7 @@ func serialize(m map[string]string) string{
 		panic(err)
 	}
 	
-	return b.String()
+	return strings.Trim(b.String(), "\n")
 }
 
 func (this *info)Values() []string{
