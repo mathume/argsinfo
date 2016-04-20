@@ -6,13 +6,16 @@ import (
 	"bytes"
 )
 
-func TestOneDefinitionIsSet(t *testing.T) {
-	input := "#Fields: a"
+func TestFieldsDefinedIsFalseIfNotRead(){
 	info := NewInfo()
 	if(info.FieldsDefined()){
 		t.Fail()
 	}
+}
 
+func TestOneDefinitionIsSet(t *testing.T) {
+	input := "#Fields: a"
+	info := NewInfo()
 	e := info.Read(input)
 	if(e != nil || !info.FieldsDefined()){
 		t.Fail()
