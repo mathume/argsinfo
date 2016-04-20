@@ -6,7 +6,7 @@ import (
 	"bytes"
 )
 
-func TestFieldsDefinedIsFalseIfNotRead(){
+func TestFieldsDefinedIsFalseIfNotRead(t *testing.T){
 	info := NewInfo()
 	if(info.FieldsDefined()){
 		t.Fail()
@@ -22,6 +22,16 @@ func TestOneDefinitionIsSet(t *testing.T) {
 	}
 }
 
+func TestOneDefinitionIsSetCheckContent(t *testing.T) {
+	input := "#Fields: a"
+	info := NewInfo()
+	_ = info.Read(input)
+	if(len(info.FieldsDefinition()) <= 0 || info.FieldsDefinition()[0] != "a"){
+		t.Fail()
+	}
+}
+
+
 func TestOneValueWithoutDefinition(t *testing.T){
 	input := "a b"
 	info := NewInfo()
@@ -31,7 +41,17 @@ func TestOneValueWithoutDefinition(t *testing.T){
 	}
 }
 
-func TestOneValue(t *testing.T){
+func TestOneValueCorrectLength(t *testing.T){
+	input := `#Fields: a b
+aValue bValue`
+	info := NewInfo()
+	_ = info.Read(input)
+	if(len(info.Values()) != 1){
+		t.Fail()
+	}
+}
+
+func TestOneValueCorrectValue(t *testing.T){
 	input := `#Fields: a b
 aValue bValue`
 	expectedOutput := encode(map[string]string{"a":"aValue","b":"bValue"})
@@ -42,6 +62,7 @@ aValue bValue`
 	}
 }
 
+
 func TestAddValue(t *testing.T){
 	input1 := "#Fields: a b"
 	input2 := "aValue bValue"
@@ -50,14 +71,14 @@ func TestAddValue(t *testing.T){
 	_ = info.Read(input1)
 	_ = info.Read(input2)
 	if(len(info.Values()) != 1 || info.Values()[0] != expectedOutput){
-		t.Fail()
+		t.Error(len(info.Values()),"values:", info.Values(), "expected:", expectedOutput)
 	}
 }
 
 func TestAddSecondValue(t *testing.T){
 	input1 := `#Fields: a b
 aValue bValue`
-	input2 := "a1Value a2Value"
+	input2 := "a1Value b1Value"
 	expectedOutput := encode(map[string]string{"a":"a1Value","b":"b1Value"})
 	info := NewInfo()
 	_ = info.Read(input1)
@@ -70,19 +91,20 @@ aValue bValue`
 func TestTwoValues(t *testing.T){
 	input := `#Fields: a b
 aValue bValue
-a1Value a2Value`
+a1Value b1Value`
 	expectedOutput := encode(map[string]string{"a":"a1Value","b":"b1Value"})
 	info := NewInfo()
 	_ = info.Read(input)
 	if(len(info.Values()) != 2 || info.Values()[1] != expectedOutput){
-		t.Fail()
+		t.Error("len", len(info.Values()), "value:", info.Values()[1], "expected:", expectedOutput)
 	}
 }
 
 func encode(m map[string]string)	string{
 		b := new(bytes.Buffer)
 		e := json.NewEncoder(b)
-		if(e != nil){
+		err := e.Encode(m);
+		if(err != nil){
 			return "couldn't encode in test"
 		}
 		return b.String()

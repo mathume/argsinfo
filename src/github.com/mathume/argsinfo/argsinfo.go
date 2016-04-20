@@ -1,16 +1,17 @@
 package argsinfo
 
 import (
-//	"encoding/json"
+	"bytes"
+	"errors"
+	"encoding/json"
 	"strings"
-//	"unicode"
 )
 
 const fieldDefinitionPrefix string = "#Fields:"
 
 type info struct{
 	fields []string
-	maps [](map[string]string)
+	values []string
 	fieldsDefined bool
 }
 
@@ -18,13 +19,18 @@ type Info interface{
 	Read(s string) error
 	Values() []string
 	FieldsDefined() bool
+	FieldsDefinition() []string
 }
 
 func NewInfo() Info{
 	m := new(info)
-	m.fields = make([]string, 1, 100)
-	m.maps = make([](map[string]string), 1, 100)
+	m.fields = make([]string, 0)
+	m.values = make([]string, 0)
 	return m
+}
+
+func (this *info)FieldsDefinition() []string{
+	return this.fields
 }
 
 func (this *info)Read(s string) error{
@@ -39,6 +45,7 @@ func (this *info)Read(s string) error{
 }
 
 func (this *info)setFieldDefinition(s string) error{
+	s = strings.Replace(s, "\r", "", -1)
 	lines := strings.FieldsFunc(s, lineSeparator)
 	this.fields = strings.Fields(lines[0])[1:]
 	this.fieldsDefined = true
@@ -53,15 +60,63 @@ func lineSeparator(c rune) bool {
 }
 
 func (this *info)addMapFromString(s string) error{
-	return nil
+	if(!this.fieldsDefined){
+		return errors.New("Fields definition missing")
+	}
+	s = strings.Replace(s, "\r", "", -1)
+	lines := strings.FieldsFunc(s, lineSeparator)
+	
+	return this.addMapFromLines(lines)
+}
+
+func minimalLength(a []string, b []string) int{
+	min := len(a)
+	if(len(b)<min){
+		min = len(b)
+	}
+	
+	return min
 }
 
 func (this *info)addMapFromLines(lines []string) error{
+	var e error
+	for i:=0; i<len(lines); i++ {
+		e = this.addValue(strings.Trim(lines[i], " "))
+	}
+	
+	return e
+}
+
+func (this *info)addValue(line string) error {
+	l := strings.Fields(line)
+	min := minimalLength(l, this.fields)
+	if(min == 0){
+		return nil
+	}
+	
+	value := make(map[string]string)
+	for i:=0; i<min; i++ {
+		value[this.fields[i]] = l[i]
+	}
+	
+	this.values = append(this.values, serialize(value))
+	
 	return nil
 }
 
+func serialize(m map[string]string) string{
+	b := new(bytes.Buffer)
+	e := json.NewEncoder(b)
+	err := e.Encode(m)
+	if(err != nil){
+		panic(err)
+	}
+	
+	return b.String()
+}
+
 func (this *info)Values() []string{
-	return nil
+	return this.values
 }
 
 func (this *info)FieldsDefined() bool{
