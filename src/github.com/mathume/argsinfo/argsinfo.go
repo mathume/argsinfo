@@ -109,7 +109,7 @@ func (this *info)addValue(line string) error {
 	return nil
 }
 
-func serialize(m map[string]string) string, error{
+func serialize(m map[string]string) (string, error){
 	b := new(bytes.Buffer)
 	e := json.NewEncoder(b)
 	err := e.Encode(m)
