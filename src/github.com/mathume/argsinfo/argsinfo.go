@@ -99,20 +99,25 @@ func (this *info)addValue(line string) error {
 		value[this.fields[i]] = l[i]
 	}
 	
-	this.values = append(this.values, serialize(value))
+	v, err := serialize(value)
+	if(err != nil){
+		return err
+	}
+	
+	this.values = append(this.values, v)
 	
 	return nil
 }
 
-func serialize(m map[string]string) string{
+func serialize(m map[string]string) string, error{
 	b := new(bytes.Buffer)
 	e := json.NewEncoder(b)
 	err := e.Encode(m)
 	if(err != nil){
-		panic(err)
+		return nil, err
 	}
 	
-	return strings.Trim(b.String(), "\n")
+	return strings.Trim(b.String(), "\n"), nil
 }
 
 func (this *info)Values() []string{
