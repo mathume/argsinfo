@@ -114,7 +114,7 @@ func serialize(m map[string]string) (string, error){
 	e := json.NewEncoder(b)
 	err := e.Encode(m)
 	if(err != nil){
-		return nil, err
+		return "", err
 	}
 	
 	return strings.Trim(b.String(), "\n"), nil
